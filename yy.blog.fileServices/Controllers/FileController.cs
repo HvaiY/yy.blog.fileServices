@@ -9,6 +9,7 @@ using System.IO;
 using System.Net.Http.Headers;
 using System;
 using System.ComponentModel.DataAnnotations;
+using yy.blog.fileServices.Services.Dto;
 
 namespace yy.blog.file.Controllers
 {
@@ -62,6 +63,21 @@ namespace yy.blog.file.Controllers
             var id = await fileService.UploadAsync(file);
             return Ok(new
             {
+                message = "成功上传",
+                payload = new { FileId = id }
+            });
+        }
+
+        /// <summary>
+        ///  base64 上传为图片保存
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [HttpPost("img")]  
+        public async Task<IActionResult> AddBase64Str([Required] Base64StrInfo file)
+        { 
+            var id = await fileService.UploadBase64StrAsync(file);
+            return Ok(new {
                 message = "成功上传",
                 payload = new { FileId = id }
             });

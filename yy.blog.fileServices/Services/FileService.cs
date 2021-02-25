@@ -9,6 +9,7 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using System.Security.Cryptography;
 using System.Text;
+using yy.blog.fileServices.Services.Dto;
 
 namespace yy.blog.file.Services
 {
@@ -41,7 +42,12 @@ namespace yy.blog.file.Services
             //临时本地存储
             var filePath = await SaveFile(file);
             // 文件指纹获取
-            var fileFingerPrint = GetFingerPrint(filePath);
+            var fileFingerPrint = GetFileFingerPrint(filePath);
+            return ProcessToDb(file.FileName, filePath, fileFingerPrint);
+        }
+
+        private Guid ProcessToDb(string fileFullName, string filePath, string fileFingerPrint)
+        {
             //var fileInfo = mySqlDapperManager.Get<FileInfos, GetFingerPrintWhere>(new GetFingerPrintWhere {FileFingerPrint= fileFingerPrint });
             // 条件拼接获取 匿名对象无需定义model传值
             var fileInfo = mySqlDapperManager.Get<FileInfos>(sql =>
@@ -53,7 +59,7 @@ namespace yy.blog.file.Services
                 return (sqlWhere, temp);
             });
             var fileBusiness = new FileBusiness();
-            fileBusiness.Name = file.FileName;
+            fileBusiness.Name = fileFullName;
             fileBusiness.BusinessName = null;
             fileBusiness.Remark = null;
             if (fileInfo != null)
@@ -62,7 +68,7 @@ namespace yy.blog.file.Services
             }
             else
             {
-                var fileName = $"files/{file.FileName}";
+                var fileName = $"files/{fileFullName}";
                 var fileTargetPath = $"{ Path.Combine(webHost.WebRootPath, fileName)}";
                 if (File.Exists(fileTargetPath))
                 {
@@ -85,15 +91,16 @@ namespace yy.blog.file.Services
             // 是否存在相同的文件 指纹相同 名称相同 -- 业务相同(暂时不考虑) 
             var filebusinessTemp = mySqlDapperManager.Get<FileBusiness>(sql =>
             {
-                var temp = new { FileInfoId = fileBusiness.FileInfoId,Name= fileBusiness.Name };
+                var temp = new { FileInfoId = fileBusiness.FileInfoId, Name = fileBusiness.Name };
                 var props = temp.GetType().GetProperties();
                 var whereStr = string.Join(" and ", props.Select(p => $"{p.Name}=@{p.Name}"));
                 var sqlWhere = $"{sql} and {whereStr}";
                 return (sqlWhere, temp);
             });
-            if (filebusinessTemp != null) {
+            if (filebusinessTemp != null)
+            {
                 return filebusinessTemp.Id;
-            } 
+            }
             fileBusiness.Id = Guid.NewGuid();
             if (!mySqlDapperManager.Insert(fileBusiness))
             {
@@ -102,12 +109,53 @@ namespace yy.blog.file.Services
             return fileBusiness.Id;
         }
 
+        public async Task<Guid> UploadBase64StrAsync(Base64StrInfo file)
+        {
+            var filePath = await SaveFile(file);
+            var fileFingerPrint = GetStringMd5Hash(file.Content);
+            return ProcessToDb($"{file.FileName}{file.FileSuffix}", filePath, fileFingerPrint);
+
+        }
+
+        private string GetStringMd5Hash(string content)
+        {
+            var md5 = MD5.Create();
+            var data = md5.ComputeHash(Encoding.UTF8.GetBytes(content));
+            StringBuilder sBuilder = new StringBuilder();
+            for (int i = 0; i < data.Length; i++)
+            {
+                sBuilder.Append(data[i].ToString("x2"));
+            }
+            return sBuilder.ToString().ToLower();
+        }
+
+        private async Task<string> SaveFile(Base64StrInfo file)
+        {
+            var fileName = $"tempFiles/{file.FileName}{file.FileSuffix}";
+            var filePath = $"{ Path.Combine(webHost.WebRootPath, fileName)}";
+            var baseStr = file.Content;
+            using (var stream = new MemoryStream(Convert.FromBase64String(baseStr)))
+            {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+                byte[] b = stream.ToArray();
+                using (var fs = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
+                { await fs.WriteAsync(b, 0, b.Length); }
+
+            }
+            return filePath;
+
+        }
+
+
         /// <summary>
         ///  获取文件指纹
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        private string GetFingerPrint(string filePath)
+        private string GetFileFingerPrint(string filePath)
         {
             var md5 = MD5.Create();
             using (var fileStream = new FileStream(filePath, FileMode.Open))

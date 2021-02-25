@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using yy.blog.file.Modals;
+using yy.blog.fileServices.Services.Dto;
 
 namespace yy.blog.file.Services
 {
@@ -11,5 +12,6 @@ namespace yy.blog.file.Services
     {
         Task<Guid> UploadAsync(IFormFile file);
         (FileInfos,FileBusiness) GetFileById(Guid id);
+        Task<Guid> UploadBase64StrAsync(Base64StrInfo file);
     }
 }
