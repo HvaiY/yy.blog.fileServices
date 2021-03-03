@@ -10,6 +10,7 @@ using System.Net.Http.Headers;
 using System;
 using System.ComponentModel.DataAnnotations;
 using yy.blog.fileServices.Services.Dto;
+using System.Reflection;
 
 namespace yy.blog.file.Controllers
 {
@@ -27,11 +28,22 @@ namespace yy.blog.file.Controllers
 
 
         [HttpGet("index")]
-        public IActionResult Index() {
-
+        public IActionResult Index() { 
             return Ok(new {
                 message = "这是文件接口页面"
-            });
+                
+            }); ;
+        }
+
+        [HttpGet("all")]
+        public IActionResult GetFileInfos()
+        { 
+           var result= fileService.GetAll();
+            return Ok(new {
+                message = "未分页的所有文件信息",
+                payload=result
+
+            }); 
         }
 
         /// <summary>

@@ -13,5 +13,6 @@ namespace yy.blog.file.Services
         Task<Guid> UploadAsync(IFormFile file);
         (FileInfos,FileBusiness) GetFileById(Guid id);
         Task<Guid> UploadBase64StrAsync(Base64StrInfo file);
+        List<FileInfoWithBase> GetAll();
     }
 }

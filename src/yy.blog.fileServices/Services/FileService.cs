@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Hosting;
 using System.Security.Cryptography;
 using System.Text;
 using yy.blog.fileServices.Services.Dto;
+using DapperExtend;
+using System.Data;
+using Dapper;
 
 namespace yy.blog.file.Services
 {
@@ -210,6 +213,19 @@ namespace yy.blog.file.Services
                 }
                 return filePath;
             }
+        }
+
+        public List<FileInfoWithBase> GetAll()
+        {
+            //mySqlDapperManager.Query
+           var conn= DapperMysqlFactory.GetConn();
+            var sql = @"select b.id,b.name,f.FileFingerPrint,f.FileUrl from  filebusiness b
+           left join   fileinfos f on b.FileInfoId = f.Id";
+          var result=  conn.Query<FileInfoWithBase>(sql, null).ToList();
+            if (conn.State == ConnectionState.Open) {
+                conn.Close();
+            }
+            return result;
         }
     }
 }

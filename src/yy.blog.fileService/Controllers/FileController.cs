@@ -25,14 +25,23 @@ namespace yy.blog.file.Controllers
             this.fileService = fileService;
         }
 
+
+        [HttpGet("index")]
+        public IActionResult Index() {
+
+            return Ok(new {
+                message = "这是文件接口页面"
+            });
+        }
+
         /// <summary>
         ///  获取文件
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpGet("id")]
+        [HttpGet]
         [ProducesResponseType(typeof(FileResult), 200)]
-        public IActionResult GetFileById([FromQuery] [Required]Guid id)
+        public IActionResult GetFileById([FromQuery][Required]Guid id)
         {
             var (fileInfo, fileBusiness) = fileService.GetFileById(id);
             var fileUrl = fileInfo.FileUrl;

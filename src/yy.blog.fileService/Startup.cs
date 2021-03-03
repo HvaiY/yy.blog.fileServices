@@ -31,21 +31,21 @@ namespace yy.blog.file
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHttpsRedirection(options => {
-                options.HttpsPort = 443;
-                options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
-            });
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
+            //services.AddHttpsRedirection(options => {
+            //    options.HttpsPort = 443;
+            //    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
+            //});
+            //services.Configure<CookiePolicyOptions>(options =>
+            //{
+            //    options.CheckConsentNeeded = context => true;
+            //    options.MinimumSameSitePolicy = SameSiteMode.None;
+            //});
 
-            services.Configure<ForwardedHeadersOptions>(options =>
-            {
-                options.ForwardedHeaders =
-                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-            }); 
+            //services.Configure<ForwardedHeadersOptions>(options =>
+            //{
+            //    options.ForwardedHeaders =
+            //        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            //}); 
             services.AddControllers();
             //services.Configure<CookiePolicyOptions>(options =>
             //{
@@ -80,21 +80,40 @@ namespace yy.blog.file
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "yy.blog.file v1"));
             }
-            else
-            {
+            else {
+                // 生产环境暴露swagger 
+                // 访问  /swagger/index.html
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "yy.blog.file v1"));
             }
-             
-            app.UseForwardedHeaders();
-            app.UseHttpsRedirection();
+
+            // 服务展示不使用 https
+            //app.UseForwardedHeaders();
+            //app.UseHttpsRedirection();
             app.UseRouting();
 
             app.UseAuthorization();
+            //app.Use(async (context, next) =>
+            //{
+            //    //Do something here
+               
+            //    //Invoke next middleware
+            //    await next.Invoke();
 
+            //    //Do something here
+
+            //});
             app.UseEndpoints(endpoints =>
             {
+                
                 endpoints.MapControllers();
+               
+                //endpoints.MapControllerRoute(
+                //   name: "default",
+                //   pattern: "swagger/index.html");
+                //endpoints.MapControllerRoute(
+                //   name: "default",
+                //   pattern: "api/{controller=File}/{action=Index}/{id?}");
             });
         }
     }

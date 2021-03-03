@@ -31,7 +31,6 @@ namespace yy.blog.file
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             //services.AddHttpsRedirection(options => {
             //    options.HttpsPort = 443;
             //    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
@@ -94,10 +93,27 @@ namespace yy.blog.file
             app.UseRouting();
 
             app.UseAuthorization();
+            //app.Use(async (context, next) =>
+            //{
+            //    //Do something here
+               
+            //    //Invoke next middleware
+            //    await next.Invoke();
 
+            //    //Do something here
+
+            //});
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers(); 
+                
+                endpoints.MapControllers();
+               
+                //endpoints.MapControllerRoute(
+                //   name: "default",
+                //   pattern: "swagger/index.html");
+                //endpoints.MapControllerRoute(
+                //   name: "default",
+                //   pattern: "api/{controller=File}/{action=Index}/{id?}");
             });
         }
     }
